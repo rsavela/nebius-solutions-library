@@ -46,3 +46,7 @@ terraform.rc
 # It's added to the root .gitignore because they shouldn't be ignored if commited to other repos.
 /soperator/installations/*
 !/soperator/installations/example
+
+#
+# Avoid credentials file
+candidate-soperator.env

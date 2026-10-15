@@ -536,8 +536,10 @@ opentelemetry_delete_jail_logs_after_read = true
 # deletes it after reading.
 opentelemetry_delete_jail_logs_min_age = "4h"
 
+# o11y disabled per setup instructions
+
 # Whether to send system logs to Nebius o11y.
-public_o11y_enabled = true
+public_o11y_enabled = false
 
 # Whether to move existing public o11y logs to the cluster's region.
 allow_o11y_region_migration = false
