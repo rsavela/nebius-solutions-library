@@ -8,10 +8,10 @@
 
 # Name of the company.
 # Used for prefixing names of the Mk8s cluster and other resources.
-company_name = ""
+company_name = "demo-corp"
 
 # Whether the cluster is production or not.
-production = true
+production = false
 
 # Follow the installation guide and put IAM merge request URL here.
 # Required if production = true.
@@ -34,11 +34,23 @@ slurm_operator_stable = true
 #----------------------------------------------------------------------------------------------------------------------#
 
 # Shared root filesystem (a.k.a. jail) holding the cluster environment.
+#filesystem_jail = {
+#  existing = {
+#    id = "computefilesystem-specific-string--format"
+#  }
+#}
+
+# let's keep things simple here 
+
 filesystem_jail = {
-  existing = {
-    id = "computefilesystem-***"
+  spec = {
+    type	         = "NETWORK_SSD"
+    size_gibibytes       = 2048
+    block_size_kibibytes = 4
   }
 }
+
+
 # To make Terraform create a new filesystem:
 # ---
 # filesystem_jail = {
@@ -54,25 +66,27 @@ filesystem_jail = {
 #
 # WARNING: You can't use "/home" mount path if Unix NFS is enabled.
 # NOTE: Node-local filesystems (network SSD / local NVMe) are configured in the NodeSets section below.
-filesystem_jail_submounts = [{
-  name       = "data"
-  mount_path = "/data"
-  existing = {
-    id = "computefilesystem-***"
-  }
-}]
+#filesystem_jail_submounts = [{
+#  name       = "data"
+#  mount_path = "/data"
+#  existing = {
+#    id = "computefilesystem-123"
+#  }
+#}]
 # To make Terraform create new filesystems:
 # ---
-# filesystem_jail_submounts = [{
-#   name       = "data"
-#   mount_path = "/data"
-#   spec = {
-#     type                 = "NETWORK_SSD"
-#     size_gibibytes       = 2048
-#     block_size_kibibytes = 4
-#     forbid_deletion      = true
-#   }
-# }]
+filesystem_jail_submounts = [{
+   name       = "data"
+   mount_path = "/data"
+   spec = {
+     type                 = "NETWORK_SSD"
+     size_gibibytes       = 2048
+     block_size_kibibytes = 4
+     forbid_deletion      = true
+   }
+ }]
+
+
 
 # Unix NFS server to be mounted to "/home".
 # This is a non-parallel shared filesystem and it can't be used for storing datasets or checkpoints.
@@ -151,19 +165,22 @@ nfs_in_k8s = {
 slurm_nodeset_workers = [
   {
     name = "worker"
-    size = 128 # Must be divisable by 18 for GB300.
+    size = 24 # Must be divisable by 18 for GB300.
 
     #------------------------------------------------#
     #                    Resources                   #
     #------------------------------------------------#
     resource = {
-      platform = "gpu-b300-sxm"
-      preset   = "8gpu-192vcpu-2768gb"
+#     platform = "gpu-b300-sxm"
+      platform = "cpu-d3"
+#      preset   = "8gpu-192vcpu-2768gb"
+      preset   = "8vcpu-32gb"
     }
     # boot_disk omitted -> defaults are used.
-    gpu_cluster = {
-      infiniband_fabric = "" # Use "id" instead of "infiniband_fabric" to attach workers to an existing GPU cluster.
-    }
+    #gpu_cluster = {
+    #  #infiniband_fabric = "" # Use "id" instead of "infiniband_fabric" to attach workers to an existing GPU cluster.
+    #  id = 1
+    #}
     nvlink = {
       enabled = false # Must be enabled for GB300 NodeSets.
       type    = "GB300"
@@ -177,7 +194,7 @@ slurm_nodeset_workers = [
     initial_number_ephemeral_nodes = 1     # How many ephemeral nodes should be running when the cluster is created.
     autoscaling = {
       enabled  = true # If enabled, ephemeral node suspend/resume will lead to VM deletion/creation.
-      min_size = 0    # Minimum NodeGroup size. If null, min_size=max_size (no scale-down).
+      min_size = 8    # Minimum NodeGroup size. If null, min_size=max_size (no scale-down).
     }
 
     #------------------------------------------------#
@@ -268,7 +285,7 @@ slurm_nodesets_partitions = [
     name               = "main" # The default partition for user jobs, can be renamed, split, or modified.
     is_all             = true   # Set to false for selecting specific Slurm NodeSets.
     slurm_nodeset_refs = []     # The list of _Slurm_ NodeSet names (e.g. "worker", or "worker-rack0").
-    topology           = ""     # Prefer using "flat" for CPU-only, "tree-ib" for GPU, "block-nvl72" for GB300.
+    topology           = "flat"     # Prefer using "flat" for CPU-only, "tree-ib" for GPU, "block-nvl72" for GB300.
     config             = "Default=YES PriorityTier=10 PreemptMode=OFF MaxTime=INFINITE State=UP OverSubscribe=YES"
   },
   {
@@ -295,7 +312,7 @@ slurm_nodeset_login = {
   size = 2
   resource = {
     platform = "cpu-d3"
-    preset   = "32vcpu-128gb"
+    preset   = "16vcpu-64gb"
   }
   # boot_disk omitted -> defaults are used.
 }
@@ -305,7 +322,7 @@ slurm_nodeset_login = {
 # WARNING: This variable shouldn't be used for managing user SSH keys long-term. After connecting to the cluster, any
 # person can create more linux users. This variable is needed only for connecting to the cluster after it's created.
 slurm_login_ssh_root_public_keys = [
-  "",
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDTzB7i+iI65LTy8tPW7/MPfnPC1nTw2jBI9lxAMGd8V rsavela@Labrador",
 ]
 
 # Whether to create public IP for login load balancer.
