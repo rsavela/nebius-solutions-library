@@ -86,7 +86,7 @@ filesystem_jail_submounts = [{
      type                 = "NETWORK_SSD"
      size_gibibytes       = 2048
      block_size_kibibytes = 4
-     forbid_deletion      = true
+     forbid_deletion      = false
    }
  }]
 
@@ -319,6 +319,7 @@ slurm_nodesets_partitions = [
 # still change the number of login pods by tuning the "size" variable here.
 slurm_nodeset_login = {
   size = 1
+  max_size = 1
   resource = {
     platform = "cpu-d3"
     preset   = "16vcpu-64gb"
