@@ -19,9 +19,12 @@ resource "terraform_data" "check_worker_gpu_fabric" {
   lifecycle {
     precondition {
       condition = (
-        each.value.is_gpu
-        ? (each.value.has_gpu_cluster && (length(each.value.cluster_id) > 0 || length(each.value.fabric) > 0))
-        : !each.value.has_gpu_cluster
+        var.disable_gpu_fabric_validation
+        || (
+          each.value.is_gpu
+          ? (each.value.has_gpu_cluster && (length(each.value.cluster_id) > 0 || length(each.value.fabric) > 0))
+          : !each.value.has_gpu_cluster
+        )
       )
       error_message = (
         each.value.is_gpu

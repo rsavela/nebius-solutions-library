@@ -400,9 +400,10 @@ module "k8s" {
 
   source = "../../modules/k8s"
 
-  iam_project_id  = data.nebius_iam_v1_project.this.id
-  vpc_subnet_id   = data.nebius_vpc_v1_subnet.this.id
-  login_public_ip = var.slurm_login_public_ip
+  iam_project_id                = data.nebius_iam_v1_project.this.id
+  vpc_subnet_id                 = data.nebius_vpc_v1_subnet.this.id
+  login_public_ip               = var.slurm_login_public_ip
+  disable_gpu_fabric_validation = var.disable_gpu_fabric_validation
 
   k8s_version                  = var.k8s_version
   node_group_version           = var.node_group_version

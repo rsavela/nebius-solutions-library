@@ -25,6 +25,10 @@ slurm_operator_version = "4.1.13"
 # Used for selecting the container registry for pulling Helm charts and container images.
 slurm_operator_stable = true
 
+#
+#  Workaround to allow GPU workers to be created without InfiniBand.
+# This is only for a demo.
+disable_gpu_fabric_validation = true
 
 
 #----------------------------------------------------------------------------------------------------------------------#
@@ -162,25 +166,30 @@ nfs_in_k8s = {
 #
 # "Slurm NodeSet" is not a runtime entity, it's just a name for referencing in partitions.
 # Users can also pass Slurm NodeSet names to Slurm commands ("sbatch", "scontrol", etc.) instead of full nodelists.
+
+
+
 slurm_nodeset_workers = [
   {
     name = "worker"
-    size = 24 # Must be divisable by 18 for GB300.
+    size = 2 # Must be divisable by 18 for GB300.
 
     #------------------------------------------------#
     #                    Resources                   #
     #------------------------------------------------#
     resource = {
 #     platform = "gpu-b300-sxm"
-      platform = "cpu-d3"
-#      preset   = "8gpu-192vcpu-2768gb"
-      preset   = "8vcpu-32gb"
+#     platform = "cpu-d3"
+      platform = "gpu-h100-sxm"
+#     preset   = "8gpu-192vcpu-2768gb"
+      preset   = "1gpu-16vcpu-200gb"
     }
     # boot_disk omitted -> defaults are used.
     #gpu_cluster = {
     #  #infiniband_fabric = "" # Use "id" instead of "infiniband_fabric" to attach workers to an existing GPU cluster.
     #  id = 1
     #}
+
     nvlink = {
       enabled = false # Must be enabled for GB300 NodeSets.
       type    = "GB300"
@@ -194,7 +203,7 @@ slurm_nodeset_workers = [
     initial_number_ephemeral_nodes = 1     # How many ephemeral nodes should be running when the cluster is created.
     autoscaling = {
       enabled  = true # If enabled, ephemeral node suspend/resume will lead to VM deletion/creation.
-      min_size = 8    # Minimum NodeGroup size. If null, min_size=max_size (no scale-down).
+      min_size = 2    # Minimum NodeGroup size. If null, min_size=max_size (no scale-down).
     }
 
     #------------------------------------------------#
@@ -309,7 +318,7 @@ slurm_nodesets_partitions = [
 # NOTE: For GB300 clusters, login pods live next to worker pods and dedicated login nodes aren't created. You can
 # still change the number of login pods by tuning the "size" variable here.
 slurm_nodeset_login = {
-  size = 2
+  size = 1
   resource = {
     platform = "cpu-d3"
     preset   = "16vcpu-64gb"
@@ -442,8 +451,8 @@ component_overrides = {}
 # NOTE: The Mk8s nodegroup has auto-scaling and the actual number of nodes isn't known in advance -- it
 # depends on the cluster size, its configuration and applied customizations.
 slurm_nodeset_system = {
-  min_size = 3
-  max_size = 24
+  min_size = 4
+  max_size = 4
   resource = {
     platform = "cpu-d3"
     # preset omitted -> driven by sizing_tier. Set a preset to override.

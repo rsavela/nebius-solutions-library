@@ -12,6 +12,12 @@ resource "terraform_data" "check_region" {
   }
 }
 
+variable "disable_gpu_fabric_validation" {
+  description = "Disable validation of GPU/CPU worker gpu_cluster configuration."
+  type        = bool
+  default     = false
+}
+
 variable "iam_project_id" {
   description = "ID of the IAM project."
   type        = string
@@ -229,6 +235,7 @@ variable "allow_empty_jail_submounts" {
   type        = bool
   default     = false
 }
+
 
 variable "filesystem_jail_submounts" {
   description = "Shared filesystems to be mounted inside jail."
@@ -1119,7 +1126,7 @@ variable "slurm_nodeset_workers" {
         length(try(trimspace(worker.gpu_cluster.infiniband_fabric), "")) > 0
       )
     ])
-    error_message = "slurm_nodeset_workers.gpu_cluster must set either id or infiniband_fabric."
+    error_message = "slurm_nodeset_workers.gpu_cluster must set either id or infiniband_fabric, or disable check globally"
   }
 
   validation {

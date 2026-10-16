@@ -14,6 +14,12 @@ variable "login_public_ip" {
   default     = true
 }
 
+variable "disable_gpu_fabric_validation" {
+  description = "Disable validation of GPU/CPU worker gpu_cluster configuration."
+  type        = bool
+  default     = false
+}
+
 #---
 
 # K8s cluster
